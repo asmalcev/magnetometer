@@ -1,6 +1,8 @@
 import numpy as np
 import csv
 
+h_all = []
+
 def calculate(_y, _m, _e, _O, _P):
   y = np.array(_y)
   y.shape = (3, 1)
@@ -15,6 +17,8 @@ def calculate(_y, _m, _e, _O, _P):
 
   h = O[:3]
   h.shape = (3, 1)
+  h_all.append(np.copy(h))
+
   D = np.array([
     [O[3], O[6], O[7]],
     [O[6], O[4], O[8]],
@@ -27,11 +31,14 @@ def calculate(_y, _m, _e, _O, _P):
     2 * y[1] * y[2]
   ])))
 
-  J = np.transpose(np.concatenate((y * h, [
+  J = np.transpose([
+    y[0] * h[0],
+    y[1] * h[1],
+    y[2] * h[2],
     y[0] * h[1] + y[1] * h[0],
     y[0] * h[2] + y[2] * h[0],
     y[1] * h[2] + y[2] * h[1]
-  ])))
+  ])
 
   F = [
     [2 * (1 + D[0][0]),                 0,                 0,            2 * D[0][1],            2 * D[0][2],                      0],
@@ -59,9 +66,8 @@ def calculate(_y, _m, _e, _O, _P):
         np.matmul(
           np.matmul(H, P),
           np.transpose(H)
-        )
+        ) + sigma2
       )
-      + sigma2
   )
 
   fi = np.matmul(
@@ -89,11 +95,12 @@ def calculate(_y, _m, _e, _O, _P):
 
 
 
+time_all = []
 
 with open('dist/iphone-calibration.csv', 'r') as fr:
   csvreader = csv.reader(fr, delimiter=';')
 
-  m = [14396.4, 3025.4, 50837.1]
+  m = [14.3964, 30.25, 50.837]
   e = [1, 1, 1]
 
   O = np.zeros(9)
@@ -112,12 +119,33 @@ with open('dist/iphone-calibration.csv', 'r') as fr:
     if index == 1:
       continue
 
-    if index > 10:
-      break
+    time_all.append(row[0])
 
     y = list(map(lambda v: float(v.replace(',', '.')), row[1:4]))
 
     (O, P) = calculate(y, m, e, np.transpose(O)[0], P)
 
-    print('\n\n\n', index)
-    print(O)
+    # print('\n\n\n', index)
+    # print(O)
+
+  h = O[:3]
+  h.shape = (3, 1)
+  h_all.append(np.copy(h))
+
+  D = np.array([
+    [O[3], O[6], O[7]],
+    [O[6], O[4], O[8]],
+    [O[7], O[8], O[5]]
+  ])
+
+  T = np.linalg.inv(np.identity(3) + D)
+
+  print(h)
+  print(T)
+
+with open('dist/h.csv', 'w', newline='') as fw:
+  csvwriter = csv.writer(fw, delimiter=';')
+
+  for i in range(len(time_all)):
+    h_all[i].shape = (1, 3)
+    csvwriter.writerow([time_all[i].replace(',', '.'), *h_all[i][0]])
