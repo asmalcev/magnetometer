@@ -1,7 +1,7 @@
 import numpy as np
 import csv
 
-h_all = []
+O_all = []
 
 def calculate(_y, _m, _e, _O, _P):
   y = np.array(_y)
@@ -17,7 +17,7 @@ def calculate(_y, _m, _e, _O, _P):
 
   h = O[:3]
   h.shape = (3, 1)
-  h_all.append(np.copy(h))
+  O_all.append(np.copy(O))
 
   D = np.array([
     [O[3], O[6], O[7]],
@@ -125,27 +125,31 @@ with open('dist/iphone-calibration.csv', 'r') as fr:
 
     (O, P) = calculate(y, m, e, np.transpose(O)[0], P)
 
-    # print('\n\n\n', index)
-    # print(O)
 
   h = O[:3]
   h.shape = (3, 1)
-  h_all.append(np.copy(h))
+  O_all.append(np.copy(O))
 
   D = np.array([
     [O[3], O[6], O[7]],
     [O[6], O[4], O[8]],
     [O[7], O[8], O[5]]
   ])
+  D.shape = (3, 3)
 
   T = np.linalg.inv(np.identity(3) + D)
 
+  print('h = ')
   print(h)
+  print('T = ')
   print(T)
+  print('T.shape = ')
+  print(T.shape)
 
-with open('dist/h.csv', 'w', newline='') as fw:
+
+
+with open('dist/o.csv', 'w', newline='') as fw:
   csvwriter = csv.writer(fw, delimiter=';')
 
   for i in range(len(time_all)):
-    h_all[i].shape = (1, 3)
-    csvwriter.writerow([time_all[i].replace(',', '.'), *h_all[i][0]])
+    csvwriter.writerow([time_all[i].replace(',', '.'), *O_all[i]])
