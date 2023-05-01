@@ -97,7 +97,8 @@ def calculate(_y, _m, _e, _O, _P):
 
 time_all = []
 
-with open('dist/iphone-calibration.csv', 'r') as fr:
+# with open('dist/iphone-calibration.csv', 'r') as fr:
+with open('dist/android-calibration.csv', 'r') as fr:
   csvreader = csv.reader(fr, delimiter=';')
 
   m = [14.3964, 30.25, 50.837]
